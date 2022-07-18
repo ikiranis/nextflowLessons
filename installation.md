@@ -56,3 +56,11 @@ workflow {
 nextflow run tutorial.nf
 ```
 
+Στην εκτέλεση, κάθε process γίνεται caching και δεν ξανατρέχει, αν δεν αλλάξει κάτι. Μόνο οι processes που αλλάζουμε κάτι, ξανατρέχουν.
+
+Μπορούμε να περάσουμε κάποια παράμετρο και στην εκτέλεση, αντί του ``params.str = 'Hello world!'` στο script.
+
+```
+nextflow run tutorial.nf --str 'Bonjour le monde'
+```
+
