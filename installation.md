@@ -7,6 +7,11 @@
 ```
 wget -qO- https://get.nextflow.io | bash
 chmod +x nextflow
+```
+
+Για να τρέχει από παντού, χωρίς να γράφουμε όλο το path 
+
+```
 sudo mv nextflow /usr/local/bin
 sudo chmod 755 /usr/local/bin/nextflow
 ```
@@ -14,7 +19,7 @@ sudo chmod 755 /usr/local/bin/nextflow
 Update Nextflow
 
 ```
-sudo nextflow self-update
+nextflow self-update
 ```
 
 Δοκιμή πρώτου script. Δημιουργούμε ένα αρχείο tutorial.nf σε έναν φάκελο εργασίας
