@@ -6,6 +6,7 @@
 
 ```
 docker.enabled = true
+process.container = 'python'
 ```
 
 Μετά δημιουργούμε τo script σε αρχείο κατάληξης .nf
@@ -15,9 +16,7 @@ docker.enabled = true
 
 nextflow.enable.dsl=2
 
-process runWhatshap {
-    container 'python'
-   
+process runWhatshap {   
     output:
         stdout
 
@@ -30,4 +29,16 @@ workflow {
     runWhatshap()
     runWhatshap.out.view()
 }
+```
+
+Το τρέχουμε με
+
+```
+nextflow run run.nf
+```
+
+ή (χωρίς το αρχείο .config)
+
+```
+nextflow run run.nf -with-docker [docker image]
 ```
