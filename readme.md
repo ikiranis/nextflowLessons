@@ -9,3 +9,7 @@
 - [Executors](executors.md)
 - [Configuration](configuration.md)
 - [Containers](containers.md)
+
+### Practice
+
+- [Docker example](docker_example.md)
