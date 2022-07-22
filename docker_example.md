@@ -17,11 +17,14 @@ process.container = 'python'
 nextflow.enable.dsl=2
 
 process runWhatshap {   
+    containerOptions '--volume  ~/dev/nextflow/data:/pharmcat/data'
+  
     output:
         stdout
 
     '''
-    whatshap --version
+    cd /pharmcat
+    whatshap phase -o data/phased.vcf --no-reference data/A_15_19.hg19.GATK.snp.vcf.gz data/A_15_19.hg19.final.bam
     '''
 }
 
