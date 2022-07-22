@@ -13,3 +13,8 @@
 ### Practice
 
 - [Docker example](docker_example.md)
+
+### Resources
+
+https://bioinformaticsworkbook.org/dataAnalysis/nextflow/02_creatingAworkflow.html#gsc.tab=0
+
