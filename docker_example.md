@@ -24,14 +24,11 @@ inputFile2 = "A_15_19.hg19.final"
 outputFile = "phased"
 
 process runWhatshap {
-
     output:
         path '*.vcf'
         
 
     """
-    #cd /pharmcat
-    #echo hello > out.vcf
     whatshap phase -o ${outputFile}.vcf --no-reference $dataDir/${inputFile1}.vcf.gz $dataDir/${inputFile2}.bam
     """
 }
@@ -45,8 +42,9 @@ process runPreprocessor {
 
     """
     fullpath="\$(readlink -f ${phased_file})"
+    currentPath="\$(pwd)"
     cd /pharmcat
-    ./PharmCAT_VCF_Preprocess.py --input_vcf "\${fullpath}"
+    ./PharmCAT_VCF_Preprocess.py --input_vcf "\${fullpath}" --output_folder "\${currentPath}"
     """
 }
 
@@ -58,10 +56,10 @@ process runPharmcat {
         stdout
 
     """
-    ls -la
     fullpath="\$(readlink -f ${ready_vcf})"
+    currentPath="\$(pwd)"
     cd /pharmcat
-    ./pharmcat -vcf "\${fullpath}"
+    ./pharmcat -vcf "\${fullpath}" -o "\${currentPath}"
     """
 }
 
