@@ -18,29 +18,50 @@ docker.runOptions = "--volume ${projectDir}/data:/pharmcat/data"
 nextflow.enable.dsl=2
 
 // Basic variables
-dataDir = "/pharmcat/data"
-inputFile1 = "A_15_19.hg19.GATK.snp"
-inputFile2 = "A_15_19.hg19.final"
-outputFile = "phased"
+params.dataDir = "/pharmcat/data"
+params.inputFile1 = "A_15_19.hg19.GATK.snp"
+params.inputFile2 = "A_15_19.hg19.final"
+params.outputFile = "phased"
+params.finalReport = "report.html"
 
+log.info """\
+         N F  P I P E L I N E    
+         ====================
+         
+         data directory   : ${params.dataDir}
+         input file 1  : ${params.inputFile1}
+         input file 1  : ${params.inputFile2}
+         phased output file : ${params.outputFile}
+         final HTML report : ${params.finalReport}
+
+         """
+         .stripIndent()
+
+// Run whatshap script. Generate phased.vcf file
 process runWhatshap {
+    debug true
+
     output:
         path '*.vcf'
-        
 
     """
-    whatshap phase -o ${outputFile}.vcf --no-reference $dataDir/${inputFile1}.vcf.gz $dataDir/${inputFile2}.bam
+    echo "Processing files..."
+    whatshap phase -o ${params.outputFile}.vcf --no-reference $params.dataDir/${params.inputFile1}.vcf.gz $params.dataDir/${params.inputFile2}.bam
     """
 }
 
-process runPreprocessor {  
+// Run PharmCAT_VCF_Preprocess script. Generate pharmcat_ready_vcf... file
+process runPreprocessor { 
+    debug true
+
     input:
         path phased_file 
 
     output:
-        path '*.vcf'
+        path '*.vcf'   
 
     """
+    echo "Processing file ${phased_file}..."
     fullpath="\$(readlink -f ${phased_file})"
     currentPath="\$(pwd)"
     cd /pharmcat
@@ -48,14 +69,18 @@ process runPreprocessor {
     """
 }
 
+// Run pharmcat script. Generate ...report.html file
 process runPharmcat {
+    debug true
+
     input:
      	path ready_vcf
 
     output:
-        stdout
+        path '*.html'
 
     """
+    echo "Processing file ${ready_vcf}..."
     fullpath="\$(readlink -f ${ready_vcf})"
     currentPath="\$(pwd)"
     cd /pharmcat
@@ -63,11 +88,24 @@ process runPharmcat {
     """
 }
 
+// Copy final HTML file to data directory
+process runFinal {
+    debug true
+
+    input:
+     	path html_file
+
+    """
+    cp ${html_file} ${params.dataDir}/${params.finalReport}
+    echo "${params.finalReport} generated on /data folder"
+    """
+}
+
 workflow {
     runWhatshap()
     runPreprocessor(runWhatshap.out)
     runPharmcat(runPreprocessor.out)
-    runPharmcat.out.view()
+    runFinal(runPharmcat.out)
 }
 ```
 
