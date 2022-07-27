@@ -7,8 +7,9 @@
 ```
 docker.enabled = true
 process.container = 'python'
+//process.container = 'gwissandbox.azurecr.io/pgx-to-report:latest'
 //docker.runOptions = '-u $(id -u):$(id -g)'
-docker.runOptions = "--volume ${projectDir}/data:/pharmcat/data"
+docker.runOptions = "--volume /home:/home"
 ```
 
 Μετά δημιουργούμε τo script σε αρχείο κατάληξης .nf
@@ -17,22 +18,51 @@ docker.runOptions = "--volume ${projectDir}/data:/pharmcat/data"
 #! /usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+// Basic params
+params.panel = "NA" //panel name - not in use
+params.genome_id = "hg19" //genome version
+params.id = "SG40009" // id 
+params.template_id = "1" // template id (folder name)
+params.run_loc = 'local' // if running on azure, specify 'azure' in the command line
+params.data_dir='patient-data' // data folder name ( possible values : patient-data and control-data)
+
+if (params.run_loc == 'azure') {
+    params.base_dir= "az://storegene-data/" // location of the SNP picker folder
+}
+else {
+    params.base_dir="/home/user/nextflow/" // location of the SNP picker folder
+}
+
+params.inputFile1 = "A_15_19.hg19.GATK.snp" // filename of first input file
+params.inputFile2 = "A_15_19.hg19.final" // filename of second input file
+params.outputFile = "phased" // filename of whatshap output file
+params.finalReport = "report.html" // filename of the final report
+
 // Basic variables
-params.dataDir = "/pharmcat/data"
-params.inputFile1 = "A_15_19.hg19.GATK.snp"
-params.inputFile2 = "A_15_19.hg19.final"
-params.outputFile = "phased"
-params.finalReport = "report.html"
+String patient_path_in=params.base_dir + params.data_dir+"/" + params.id + "/input/" // location of patient data
+String patient_path_out=params.base_dir + params.data_dir+"/" + params.id + "/output/" // location of patient data
+String inputFile1 = patient_path_in + params.inputFile1 + ".vcf.gz"
+String inputFile2 = patient_path_in + params.inputFile2 + ".bam"
+String outputFile = params.outputFile + ".vcf"
+String finalReport = patient_path_out + params.finalReport
 
 log.info """\
          N F  P I P E L I N E    
          ====================
-         
-         data directory   : ${params.dataDir}
+
+         params panel : ${params.panel}
+         genome id : ${params.genome_id}
+         id : ${params.id}
+         template id : ${params.template_id}
+         run location : ${params.run_loc}
+         data dir : ${params.data_dir}
+         base dir : ${params.base_dir}
          input file 1  : ${params.inputFile1}
-         input file 1  : ${params.inputFile2}
+         input file 2  : ${params.inputFile2}
          phased output file : ${params.outputFile}
          final HTML report : ${params.finalReport}
+         patient path in : ${patient_path_in}
+         patient path out : ${patient_path_out}
 
          """
          .stripIndent()
@@ -46,7 +76,7 @@ process runWhatshap {
 
     """
     echo "Processing files..."
-    whatshap phase -o ${params.outputFile}.vcf --no-reference $params.dataDir/${params.inputFile1}.vcf.gz $params.dataDir/${params.inputFile2}.bam
+    whatshap phase -o ${outputFile} --no-reference ${inputFile1} ${inputFile2}
     """
 }
 
@@ -96,8 +126,9 @@ process runFinal {
      	path html_file
 
     """
-    cp ${html_file} ${params.dataDir}/${params.finalReport}
-    echo "${params.finalReport} generated on /data folder"
+    mkdir -p ${patient_path_out}
+    cp ${html_file} ${finalReport}
+    echo "${params.finalReport} generated on ${patient_path_out} folder"
     """
 }
 
