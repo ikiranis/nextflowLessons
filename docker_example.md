@@ -20,10 +20,10 @@ nextflow.enable.dsl=2
 
 // Basic params
 params.panel = "NA" //panel name - not in use
-params.genome_id = "hg19" //genome version
-params.id = "SG40009" // id 
+params.genome_id = "hg38" //genome version
+params.id = "87" // id 
 params.template_id = "1" // template id (folder name)
-params.run_loc = 'local' // if running on azure, specify 'azure' in the command line
+params.run_loc = 'azure' // if running on azure, specify 'azure' in the command line
 params.data_dir='patient-data' // data folder name ( possible values : patient-data and control-data)
 
 if (params.run_loc == 'azure') {
@@ -33,18 +33,22 @@ else {
     params.base_dir="/home/user/nextflow/" // location of the SNP picker folder
 }
 
-params.inputFile1 = "A_15_19.hg19.GATK.snp" // filename of first input file
-params.inputFile2 = "A_15_19.hg19.final" // filename of second input file
 params.outputFile = "phased" // filename of whatshap output file
 params.finalReport = "report.html" // filename of the final report
 
 // Basic variables
 String patient_path_in=params.base_dir + params.data_dir+"/" + params.id + "/input/" + params.genome_id + "/" // location of patient data
 String patient_path_out=params.base_dir + params.data_dir+"/" + params.id + "/output/" + params.genome_id + "/" // location of patient data
-String inputFile1 = patient_path_in + params.inputFile1 + ".vcf.gz"
-String inputFile2 = patient_path_in + params.inputFile2 + ".bam"
+String patient_input_bam = patient_path_in + params.inputFile2 + "/*final.bam" // location of the input folder
+String patient_input_bam_bai = patient_path_in + params.inputFile2 + "/*final.bam.bai" 
+String patient_input_vcf = patient_path_in + params.inputFile1 + "/*snp.vcf.gz"  // location of vcf file
 String outputFile = params.outputFile + ".vcf"
 String finalReport = patient_path_out + params.finalReport
+
+// Channels
+BamFile = Channel.fromPath( patient_input_bam ) 
+BamBaiFile = Channel.fromPath( patient_input_bam_bai ) 
+VcfFile = Channel.fromPath( patient_input_vcf ) 
 
 log.info """\
          N F  P I P E L I N E    
@@ -71,12 +75,17 @@ log.info """\
 process runWhatshap {
     debug true
 
+    input: 
+        file BamFile
+        file BamBaiFile
+        file VcfFile
+
     output:
         path '*.vcf'
 
     """
     echo "Processing files..."
-    whatshap phase -o ${outputFile} --no-reference ${inputFile1} ${inputFile2}
+    whatshap phase -o ${outputFile} --no-reference ${VcfFile} ${BamFile} ${BamBaiFile}
     """
 }
 
@@ -133,7 +142,7 @@ process runFinal {
 }
 
 workflow {
-    runWhatshap()
+    runWhatshap(BamFile, BamBaiFile, VcfFile)
     runPreprocessor(runWhatshap.out)
     runPharmcat(runPreprocessor.out)
     runFinal(runPharmcat.out)
