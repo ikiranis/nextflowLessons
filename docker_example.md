@@ -39,9 +39,9 @@ params.finalReport = "report.html" // filename of the final report
 // Basic variables
 String patient_path_in=params.base_dir + params.data_dir+"/" + params.id + "/input/" + params.genome_id + "/" // location of patient data
 String patient_path_out=params.base_dir + params.data_dir+"/" + params.id + "/output/" + params.genome_id + "/" // location of patient data
-String patient_input_bam = patient_path_in + "*final.bam" // location of the input folder
-String patient_input_bam_bai = patient_path_in + "*final.bam.bai" 
-String patient_input_vcf = patient_path_in + "*snp.vcf.gz"  // location of vcf file
+String patient_input_bam = patient_path_in + "*.final.bam" // location of the input folder
+String patient_input_bam_bai = patient_path_in + "*.final.bam.bai" 
+String patient_input_vcf = patient_path_in + "*.snp.vcf"  // location of vcf file
 String outputFile = params.outputFile + ".vcf"
 String finalReport = patient_path_out + params.finalReport
 
@@ -77,16 +77,17 @@ process runWhatshap {
     debug true
 
     input: 
-        file BamFile
-        file BamBaiFile
-        file VcfFile
+        file bamFile
+        file bamBaiFile
+        file vcfFile
 
     output:
         path '*.vcf'
 
     """
+    echo ${bamFile}
     echo "Processing files..."
-    whatshap phase -o ${outputFile} --no-reference ${VcfFile} ${BamFile} ${BamBaiFile}
+    whatshap phase -o ${outputFile} --no-reference ${vcfFile} ${bamFile} ${bamBaiFile}
     """
 }
 
