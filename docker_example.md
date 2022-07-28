@@ -39,8 +39,8 @@ params.outputFile = "phased" // filename of whatshap output file
 params.finalReport = "report.html" // filename of the final report
 
 // Basic variables
-String patient_path_in=params.base_dir + params.data_dir+"/" + params.id + "/input/" // location of patient data
-String patient_path_out=params.base_dir + params.data_dir+"/" + params.id + "/output/" // location of patient data
+String patient_path_in=params.base_dir + params.data_dir+"/" + params.id + "/input/" + params.genome_id + "/" // location of patient data
+String patient_path_out=params.base_dir + params.data_dir+"/" + params.id + "/output/" + params.genome_id + "/" // location of patient data
 String inputFile1 = patient_path_in + params.inputFile1 + ".vcf.gz"
 String inputFile2 = patient_path_in + params.inputFile2 + ".bam"
 String outputFile = params.outputFile + ".vcf"
