@@ -61,8 +61,9 @@ log.info """\
          run location : ${params.run_loc}
          data dir : ${params.data_dir}
          base dir : ${params.base_dir}
-         input file 1  : ${params.inputFile1}
-         input file 2  : ${params.inputFile2}
+         input bam file  : ${patient_input_bam}
+         input bam bai file  : ${patient_input_bam_bai}
+         input vcf file  : ${patient_input_vcf}
          phased output file : ${params.outputFile}
          final HTML report : ${params.finalReport}
          patient path in : ${patient_path_in}
