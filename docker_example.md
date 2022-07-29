@@ -38,8 +38,8 @@ params.finalReport = "report.html" // filename of the final report
 
 
 // Basic variables
-String patient_path_in = params.base_dir + params.data_dir+"/" + params.id + "/input/" + params.genome_id + "/" // location of patient data
-String patient_path_out = params.base_dir + params.data_dir+"/" + params.id + "/output/" + params.genome_id + "/" // location of patient data
+String patient_path_in = params.base_dir + params.data_dir + "/" + params.id + "/input/" + params.genome_id + "/" // location of patient data
+String patient_path_out = params.base_dir + params.data_dir + "/" + params.id + "/output/" + params.genome_id + "/" // location of patient data
 String patient_input_bam = patient_path_in + "*.final.bam" // location of the input folder
 String patient_input_bam_bai = patient_path_in + "*.final.bam.bai" 
 String patient_input_vcf = patient_path_in + "*.snp.vcf"  // location of vcf file
@@ -50,6 +50,8 @@ String finalReport = patient_path_out + params.finalReport
 BamFile = Channel.fromPath( patient_input_bam ) 
 BamBaiFile = Channel.fromPath( patient_input_bam_bai ) 
 VcfFile = Channel.fromPath( patient_input_vcf ) 
+FinalReport = Channel.fromPath( finalReport ) 
+PathOut = Channel.fromPath( patient_path_out ) 
 
 log.info """\
          N F  P I P E L I N E    
@@ -87,7 +89,7 @@ process runWhatshap {
 
     """
     echo "Processing files..."
-    whatshap phase -o ${outputFile} --no-reference ${VcfFile} ${BamFile} ${BamBaiFile}
+    whatshap phase -o ${outputFile} --no-reference ${VcfFile} ${BamFile}
     """
 }
 
@@ -135,11 +137,13 @@ process runFinal {
 
     input:
      	path html_file
+        file FinalReport
+        path PathOut
 
     """
-    mkdir -p ${patient_path_out}
-    cp ${html_file} ${finalReport}
-    echo "${params.finalReport} generated on ${patient_path_out} folder"
+    mkdir -p ${PathOut}
+    cp ${html_file} ${PathOut}${FinalReport}
+    echo "${FinalReport} generated on ${PathOut} folder"
     """
 }
 
@@ -147,7 +151,7 @@ workflow {
     runWhatshap(BamFile, BamBaiFile, VcfFile)
     runPreprocessor(runWhatshap.out)
     runPharmcat(runPreprocessor.out)
-    runFinal(runPharmcat.out)
+    runFinal(runPharmcat.out, FinalReport, PathOut)
 }
 ```
 
