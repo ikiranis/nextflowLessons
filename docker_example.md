@@ -114,6 +114,8 @@ process runPreprocessor {
 
 // Run pharmcat script. Generate ...report.html file
 process runPharmcat {
+    publishDir "$patient_path_out/", pattern: '*.html', mode: 'copy'
+
     debug true
 
     input:
@@ -141,9 +143,10 @@ process runFinal {
         path PathOut
 
     """
-    mkdir -p ${PathOut}
-    cp ${html_file} ${PathOut}${FinalReport}
-    echo "${FinalReport} generated on ${PathOut} folder"
+    #mkdir -p ${PathOut}
+    ls ${PathOut}
+    #cp ${html_file} ${PathOut}${FinalReport}
+    #echo "${FinalReport} generated on ${PathOut} folder"
     """
 }
 
